@@ -1,0 +1,283 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/////////////////////////////////////////////////////////
+// USER
+/////////////////////////////////////////////////////////
+
+model User {
+  id           String      @id @default(uuid())
+  fullName     String
+  email        String      @unique
+  password     String
+  phone        String?
+  avatar       String?
+  role         Role        @default(BUYER)
+  isVerified   Boolean     @default(false)
+
+  addresses    Address[]
+  cartItems    CartItem[]
+  orders        Order[]
+  reviews      Review[]
+  wishlists    Wishlist[]
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+/////////////////////////////////////////////////////////
+// CATEGORY
+/////////////////////////////////////////////////////////
+
+model Category {
+  id           String      @id @default(uuid())
+  name         String      @unique
+  slug         String      @unique
+  description  String?
+  image        String?
+
+  products     Product[]
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+/////////////////////////////////////////////////////////
+// PRODUCT
+/////////////////////////////////////////////////////////
+
+model Product {
+  id           String          @id @default(uuid())
+  name         String
+  slug         String          @unique
+  description  String
+  price        Decimal         @db.Decimal(10, 2)
+  stock        Int
+  sku          String          @unique
+  featured     Boolean         @default(false)
+  status       ProductStatus   @default(ACTIVE)
+
+  categoryId   String
+  category     Category        @relation(fields: [categoryId], references: [id])
+
+  images       ProductImage[]
+  reviews      Review[]
+  cartItems    CartItem[]
+  orderItems   OrderItem[]
+  wishlists    Wishlist[]
+
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+}
+
+/////////////////////////////////////////////////////////
+// PRODUCT IMAGE
+/////////////////////////////////////////////////////////
+
+model ProductImage {
+  id          String      @id @default(uuid())
+  imageUrl    String
+  isPrimary   Boolean     @default(false)
+
+  productId   String
+  product     Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime    @default(now())
+}
+
+/////////////////////////////////////////////////////////
+// CART
+/////////////////////////////////////////////////////////
+
+model CartItem {
+  id          String      @id @default(uuid())
+
+  quantity    Int         @default(1)
+
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  productId   String
+  product     Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@unique([userId, productId])
+}
+
+/////////////////////////////////////////////////////////
+// ADDRESS
+/////////////////////////////////////////////////////////
+
+model Address {
+  id            String      @id @default(uuid())
+
+  fullName      String
+  phone         String
+
+  country       String
+  city          String
+  subCity       String
+  woreda        String?
+  houseNumber   String?
+
+  isDefault     Boolean     @default(false)
+
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  orders        Order[]
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+/////////////////////////////////////////////////////////
+// ORDER
+/////////////////////////////////////////////////////////
+
+model Order {
+  id              String          @id @default(uuid())
+
+  userId          String
+  user            User            @relation(fields: [userId], references: [id])
+
+  addressId       String?
+  address         Address?        @relation(fields: [addressId], references: [id])
+
+  status          OrderStatus     @default(PENDING)
+
+  paymentStatus   PaymentStatus   @default(PENDING)
+
+  totalPrice      Decimal         @db.Decimal(10,2)
+
+  items           OrderItem[]
+
+  payment         Payment?
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+/////////////////////////////////////////////////////////
+// ORDER ITEM
+/////////////////////////////////////////////////////////
+
+model OrderItem {
+  id          String      @id @default(uuid())
+
+  quantity    Int
+  price       Decimal     @db.Decimal(10,2)
+
+  orderId     String
+  order       Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  productId   String
+  product     Product     @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+/////////////////////////////////////////////////////////
+// PAYMENT
+/////////////////////////////////////////////////////////
+
+model Payment {
+  id              String            @id @default(uuid())
+
+  method          PaymentMethod
+
+  status          PaymentStatus
+
+  transactionId   String?
+
+  orderId         String            @unique
+  order           Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime          @default(now())
+}
+
+/////////////////////////////////////////////////////////
+// REVIEW
+/////////////////////////////////////////////////////////
+
+model Review {
+  id          String      @id @default(uuid())
+
+  rating      Int
+  comment     String?
+
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  productId   String
+  product     Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime    @default(now())
+
+  @@unique([userId, productId])
+}
+
+/////////////////////////////////////////////////////////
+// WISHLIST
+/////////////////////////////////////////////////////////
+
+model Wishlist {
+  id          String      @id @default(uuid())
+
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  productId   String
+  product     Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime    @default(now())
+
+  @@unique([userId, productId])
+}
+
+/////////////////////////////////////////////////////////
+// ENUMS
+/////////////////////////////////////////////////////////
+
+enum Role {
+  BUYER
+  ADMIN
+}
+
+enum ProductStatus {
+  ACTIVE
+  DRAFT
+  OUT_OF_STOCK
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  TELEBIRR
+  LOCAL_BANK
+  CHAPA
+  CASH_ON_DELIVERY
+}
