@@ -11,6 +11,7 @@ import {
   createProductSchema,
   updateProductSchema,
 } from "../validators/product.validator.js";
+import { productSearchSchema } from "../validators/productSearch.validator.js";
 
 interface IdParams {
   id: string;
@@ -28,8 +29,10 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-export const getAll = asyncHandler(async (_req: Request, res: Response) => {
-  const products = await getProducts();
+export const getAll = asyncHandler(async (req: Request, res: Response) => {
+  const query = productSearchSchema.parse(req.query);
+
+  const products = await getProducts(query);
 
   res.status(200).json({
     success: true,

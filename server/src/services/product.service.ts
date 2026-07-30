@@ -2,6 +2,7 @@ import { Prisma, ProductStatus } from "@prisma/client";
 import prisma from "../config/prisma.js";
 import { AppError } from "../utils/AppError.js";
 import { generateSlug } from "../utils/slug.js";
+import { ProductSearchInput } from "../validators/productSearch.validator.js";
 
 interface ProductInput {
   name: string;
@@ -65,16 +66,107 @@ export const createProduct = async (data: ProductInput) => {
   return product;
 };
 
-export const getProducts = async () => {
-  return prisma.product.findMany({
-    include: {
-      category: true,
-      images: true,
+export const getProducts = async (query: ProductSearchInput) => {
+  const {
+    search,
+    category,
+    status,
+    featured,
+    minPrice,
+    maxPrice,
+    sort,
+    order,
+    page,
+    limit,
+  } = query;
+
+  const skip = (page - 1) * limit;
+
+  const where: Prisma.ProductWhereInput = {};
+
+  // Search by product name
+  if (search) {
+    where.name = {
+      contains: search,
+      mode: "insensitive",
+    };
+  }
+
+  // Filter by category slug
+  if (category) {
+    where.category = {
+      slug: category,
+    };
+  }
+
+  // Filter by status
+  if (status) {
+    where.status = status;
+  }
+
+  // Filter featured
+  if (featured !== undefined) {
+    where.featured = featured === "true";
+  }
+
+  // Price filter
+  if (minPrice !== undefined || maxPrice !== undefined) {
+    where.price = {};
+
+    if (minPrice !== undefined) {
+      where.price.gte = minPrice;
+    }
+
+    if (maxPrice !== undefined) {
+      where.price.lte = maxPrice;
+    }
+  }
+
+  const [products, total] = await prisma.$transaction([
+    prisma.product.findMany({
+      where,
+
+      include: {
+        category: true,
+
+        images: {
+          where: {
+            isPrimary: true,
+          },
+        },
+      },
+
+      orderBy: {
+        [sort]: order,
+      },
+
+      skip,
+
+      take: limit,
+    }),
+
+    prisma.product.count({
+      where,
+    }),
+  ]);
+
+  return {
+    products,
+
+    pagination: {
+      total,
+
+      page,
+
+      limit,
+
+      totalPages: Math.ceil(total / limit),
+
+      hasNextPage: page < Math.ceil(total / limit),
+
+      hasPreviousPage: page > 1,
     },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  };
 };
 
 export const getProductById = async (id: string) => {
