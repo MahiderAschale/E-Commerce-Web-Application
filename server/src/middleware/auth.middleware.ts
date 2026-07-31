@@ -6,6 +6,7 @@ import { AppError } from "../utils/AppError.js";
 import { Role } from "@prisma/client";
 
 interface JwtPayload {
+  id: string;
   userId: string;
   role: Role;
 }
@@ -49,6 +50,7 @@ export const protect = async (
     }
 
     req.user = {
+      id: user.id,
       userId: user.id,
       role: user.role,
     };

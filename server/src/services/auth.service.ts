@@ -90,6 +90,66 @@ export const getProfile = async (userId: string) => {
   });
 };
 
+
+
+interface UpdateProfileInput {
+  fullName?: string;
+  email?: string;
+  phone?: string;
+}
+
+export const updateProfile = async (
+  userId: string,
+  data: UpdateProfileInput
+) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+  });
+
+  if (!user) {
+    throw new AppError("User not found.", 404);
+  }
+
+  // Check email uniqueness
+  if (data.email && data.email !== user.email) {
+    const emailExists = await prisma.user.findUnique({
+      where: {
+        email: data.email,
+      },
+    });
+
+    if (emailExists) {
+      throw new AppError("Email is already in use.", 400);
+    }
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      fullName: data.fullName,
+      email: data.email,
+      phone: data.phone,
+    },
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      phone: true,
+      avatar: true,
+      role: true,
+      isVerified: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  return updatedUser;
+};
+
 export const logoutUser = async () => {
   return {
     message: "Logged out successfully",

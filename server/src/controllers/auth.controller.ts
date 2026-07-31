@@ -4,6 +4,8 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { loginUser } from "../services/auth.service.js";
 import { getProfile } from "../services/auth.service.js";
 import { logoutUser } from "../services/auth.service.js";
+import {updateProfile as updateProfileService,} from "../services/auth.service.js";
+import {updateProfileSchema} from "../validators/auth.validator.js"
 
 export const register = asyncHandler(async (req: Request, res: Response) => {
   const user = await registerUser(
@@ -37,6 +39,21 @@ export const profile = asyncHandler(async (req, res) => {
 
   res.json({
     success: true,
+    data: user,
+  });
+});
+
+export const updateProfile = asyncHandler(async (req, res) => {
+  const body = updateProfileSchema.parse(req.body);
+
+  const user = await updateProfileService(
+    String(req.user!.id),
+    body
+  );
+
+  res.status(200).json({
+    success: true,
+    message: "Profile updated successfully.",
     data: user,
   });
 });
