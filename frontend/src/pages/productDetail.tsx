@@ -7,15 +7,14 @@ import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "../components/ui/radio-group"
 import { Label } from "../components/ui/label"
 import { getProductById } from "../services/product.service";
-import { useCart } from "../component/CartContext"
+import { addToCart } from "../services/cart.service";
 import Navbar from "@/component/Navbar";
 
 export default function ProductDetailPage () {
   const { id } = useParams<{ id: string} >()
   const [selectedSize, setSelectedSize] = useState("")
   const [quantity, setQuantity] = useState(1)
-  const { addToCart } = useCart()
-  const navigate = useNavigate();
+   const navigate = useNavigate();
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -71,19 +70,17 @@ useEffect(() => {
 }, [product]);
 
 
+const handleAddToCart = async () => {
+  try {
+    await addToCart(product.id, quantity);
 
-const handleAddToCart = () => {
-  addToCart({
-    id: product.id,
-    name: product.name,
-    price: product.price,
-    images: product.images,
-    size: selectedSize,
-    quantity,
-  });
-
-  navigate("/cart");
+    navigate("/cart");
+  } catch (error) {
+    console.error(error);
+    alert("Failed to add product to cart.");
+  }
 };
+
   const decreaseQuantity = () => {
     if (quantity > 1) {
       setQuantity(quantity - 1)
