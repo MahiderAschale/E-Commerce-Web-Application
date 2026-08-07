@@ -21,12 +21,10 @@ return(
       <Route path="/products" element={<ProductList/>}/>
       <Route path="/product/:id" element={<ProductDetail/>}/>
       <Route path="/cart" element={<CartPage />} />
-      <Route path="/checkout" element={<CheckoutPage />} /> 
-      <Route path="/account" element={<AccountPage/>}/>
+      <Route path="/checkout" element={ <ProtectedRoute> <CheckoutPage /> </ProtectedRoute> } /><Route path="/account" element={<AccountPage/>}/>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/profile" element= {<ProtectedRoute> <ProfilePage/></ProtectedRoute>}/>
-      <Route path="/address" element={<AddressPage />} />
-      </Routes>
+      <Route path="/address" element={ <ProtectedRoute> <AddressPage /> </ProtectedRoute> } /> </Routes>
      </>
 );
 }
