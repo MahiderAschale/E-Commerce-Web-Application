@@ -254,10 +254,10 @@ export default function CartPage() {
   
                 </div>
   
-                <Link to="/checkout">
+                <Link to="/address">
   
                   <Button className="w-full mt-8 h-11 bg-black hover:bg-gray-900 text-white rounded-xl">
-                    Proceed to Checkout
+                    Add your Address
                   </Button>
   
                 </Link>

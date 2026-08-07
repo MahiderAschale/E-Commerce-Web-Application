@@ -10,6 +10,7 @@ import ProfilePage from "./pages/Profile";
 import ProtectedRoute from "./component/ProtectedRoute";
 
 import './App.css'
+import AddressPage from "./pages/AddressPage";
 
 
 export default function App() {
@@ -24,6 +25,7 @@ return(
       <Route path="/account" element={<AccountPage/>}/>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/profile" element= {<ProtectedRoute> <ProfilePage/></ProtectedRoute>}/>
+      <Route path="/address" element={<AddressPage />} />
       </Routes>
      </>
 );
