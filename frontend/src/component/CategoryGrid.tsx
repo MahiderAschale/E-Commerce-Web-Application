@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom"
 const CategoryGrid = () => { 
   const categories = [
-    { name: "WOMEN", link: "/women" },
-    { name: "MEN", link: "/men" },
+    { name: "WOMEN", link: "#" },
+    { name: "MEN", link: "#" },
     ]
 
   return (

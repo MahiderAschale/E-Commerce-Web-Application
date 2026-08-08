@@ -1,5 +1,5 @@
 import HeroSection from "@/component/HeroSection"
-import BestSellers from "@/component/BestSellers"
+
 import PromoSection from "@/component/PromoSection"
 import Footer from "@/component/Footer"
 import CategoryGrid from "@/component/CategoryGrid"
@@ -9,7 +9,7 @@ const HomePage = () => {
     <div>
       <Navbar/>
       <HeroSection />
-      <BestSellers />
+      
       <PromoSection />
       <CategoryGrid />
       <Footer/>
