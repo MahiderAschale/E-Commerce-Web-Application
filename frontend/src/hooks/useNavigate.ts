@@ -1,11 +1,9 @@
-'use client'
-
-import { useRouter } from 'next/navigation'
+import { useNavigate as useReactRouterNavigate } from "react-router-dom";
 
 export function useNavigate() {
-  const router = useRouter()
+  const navigate = useReactRouterNavigate();
 
   return (path: string) => {
-    router.push(path)
-  }
+    navigate(path);
+  };
 }
