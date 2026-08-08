@@ -8,6 +8,7 @@ import LoginPage from "./pages/login";
 import AccountPage from './pages/account'
 import ProfilePage from "./pages/Profile";
 import ProtectedRoute from "./component/ProtectedRoute";
+import PaymentSuccessPage from "./pages/payment-success";
 
 import './App.css'
 import AddressPage from "./pages/AddressPage";
@@ -24,7 +25,9 @@ return(
       <Route path="/checkout" element={ <ProtectedRoute> <CheckoutPage /> </ProtectedRoute> } /><Route path="/account" element={<AccountPage/>}/>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/profile" element= {<ProtectedRoute> <ProfilePage/></ProtectedRoute>}/>
-      <Route path="/address" element={ <ProtectedRoute> <AddressPage /> </ProtectedRoute> } /> </Routes>
+      <Route path="/address" element={ <ProtectedRoute> <AddressPage /> </ProtectedRoute> } /> 
+      <Route path="/payment-success"element={<PaymentSuccessPage />}/>
+      </Routes>
      </>
 );
 }

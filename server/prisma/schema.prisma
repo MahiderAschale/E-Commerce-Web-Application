@@ -274,8 +274,5 @@ enum PaymentStatus {
 }
 
 enum PaymentMethod {
-  TELEBIRR
-  LOCAL_BANK
-  CHAPA
-  CASH_ON_DELIVERY
+   CHAPA
 }
