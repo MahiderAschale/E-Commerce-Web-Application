@@ -2,8 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import Footer from "../component/Footer"
-import Navbar from "../component/Navbar"
+
 
 export default function LoginPage() {
   const navigate = useNavigate();

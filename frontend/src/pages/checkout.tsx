@@ -53,7 +53,7 @@ export default function CheckoutPage() {
   // Address selected from AddressPage
   const addressId = location.state?.addressId;
 
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [, setCart] = useState<CartItem[]>([]);
   const [address, setAddress] = useState<Address | null>(null);
   const [summary, setSummary] = useState<CheckoutSummary | null>(null);
 

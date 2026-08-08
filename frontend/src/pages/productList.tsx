@@ -62,12 +62,12 @@ const fetchProducts = async () => {
             </Link>
             </div>
             <div className="space-y-3">
-            <Link to="/men" className="font-medium text-gray-900">
+            <Link to="#" className="font-medium text-gray-900">
               MEN
             </Link>
             </div>
             <div className="space-y-3">
-            <Link to="/women" className="font-medium text-gray-900">
+            <Link to="#" className="font-medium text-gray-900">
               WOMEN
             </Link>
            </div>
