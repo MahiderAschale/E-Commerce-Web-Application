@@ -297,6 +297,10 @@ export default function OrdersPage() {
                         </p>
                       </div>
                     )}
+                     <Link to={`/orders/${order.id}`}
+                    className="text-sm font-medium text-blue-600 hover:underline">
+                       View Details →
+                       </Link>
                   </div>
                 </div>
               ))}
