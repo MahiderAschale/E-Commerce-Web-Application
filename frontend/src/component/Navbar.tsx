@@ -154,7 +154,7 @@ const Navbar = () => {
               <Link to="/women">WOMEN</Link>
 
               {isAdmin && (
-                <Link to="/admin">
+                <Link to="/dashboard">
                   ADMIN DASHBOARD
                 </Link>
               )}
