@@ -103,7 +103,7 @@ const Navbar = () => {
             )}
 
             {isAdmin && (
-              <Link to="/admin">
+              <Link to="/AdminDashboard">
                 <LayoutDashboard size={20} />
               </Link>
             )}
@@ -154,7 +154,7 @@ const Navbar = () => {
               <Link to="/women">WOMEN</Link>
 
               {isAdmin && (
-                <Link to="/dashboard">
+                <Link to="/AdminDashboard">
                   ADMIN DASHBOARD
                 </Link>
               )}
