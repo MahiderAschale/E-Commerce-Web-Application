@@ -223,316 +223,409 @@ export default function AdminCategories() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <p className="text-red-600">
-          {error}
-        </p>
-      </div>
-    );
-  }
-
-  // ==========================================
-  // UI
-  // ==========================================
-
-  return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-7xl mx-auto">
-
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-
-          <div>
-            <h1 className="text-3xl font-bold">
-              Categories
-            </h1>
-
-            <p className="text-gray-500 mt-1">
-              Manage your store categories
-            </p>
-          </div>
-
-          <button
-            onClick={openCreateForm}
-            className="bg-black text-white px-5 py-3 rounded-lg hover:bg-gray-800 transition"
-          >
-            + Add Category
-          </button>
-
-        </div>
-
-        {/* Form */}
-        {showForm && (
-          <div className="bg-white rounded-xl shadow p-6 mb-8">
-
-            <div className="flex items-center justify-between mb-6">
-
-              <div>
-                <h2 className="text-xl font-bold">
-                  {editingId
-                    ? "Edit Category"
-                    : "Add New Category"}
-                </h2>
-
-                <p className="text-sm text-gray-500 mt-1">
-                  {editingId
-                    ? "Update category information."
-                    : "Create a new product category."}
-                </p>
-              </div>
-
-              <button
-                onClick={closeForm}
-                className="text-gray-500 hover:text-black text-xl"
-              >
-                ✕
-              </button>
-
+      <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
+        <div className="max-w-7xl mx-auto">
+    
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+    
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Categories
+              </h1>
+    
+              <p className="text-gray-500 mt-1">
+                Manage your store categories
+              </p>
             </div>
-
-            <form
-              onSubmit={handleSubmit}
-              className="space-y-5"
+    
+            <button
+              onClick={openCreateForm}
+              className="bg-black text-white px-5 py-3 rounded-lg
+                         hover:bg-gray-800 transition
+                         w-full sm:w-auto"
             >
-
-              {/* Name */}
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Category Name
-                </label>
-
-                <input
-                  type="text"
-                  name="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  placeholder="e.g. Electronics"
-                  className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
-                />
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Description
-                </label>
-
-                <textarea
-                  name="description"
-                  value={form.description}
-                  onChange={handleChange}
-                  placeholder="Category description..."
-                  rows={4}
-                  className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
-                />
-              </div>
-
-              {/* Image */}
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Image URL
-                </label>
-
-                <input
-                  type="text"
-                  name="image"
-                  value={form.image}
-                  onChange={handleChange}
-                  placeholder="https://example.com/image.jpg"
-                  className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
-                />
-              </div>
-
-              {/* Buttons */}
-              <div className="flex gap-3 pt-2">
-
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 disabled:opacity-50"
-                >
-                  {saving
-                    ? "Saving..."
-                    : editingId
-                    ? "Update Category"
-                    : "Create Category"}
-                </button>
-
+              + Add Category
+            </button>
+    
+          </div>
+    
+          {/* Create / Edit Form */}
+          {showForm && (
+            <div className="bg-white rounded-2xl shadow-sm border mb-8">
+    
+              {/* Form Header */}
+              <div className="flex items-center justify-between px-6 py-5 border-b">
+    
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">
+                    {editingId ? "Edit Category" : "Add New Category"}
+                  </h2>
+    
+                  <p className="text-sm text-gray-500 mt-1">
+                    {editingId
+                      ? "Update the category information below."
+                      : "Create a new category for your products."}
+                  </p>
+                </div>
+    
                 <button
                   type="button"
                   onClick={closeForm}
-                  className="border px-6 py-3 rounded-lg hover:bg-gray-50"
+                  className="w-9 h-9 rounded-lg
+                             flex items-center justify-center
+                             text-gray-500
+                             hover:bg-gray-100
+                             hover:text-gray-900
+                             transition"
                 >
-                  Cancel
+                  ✕
                 </button>
-
+    
               </div>
-
-            </form>
-          </div>
-        )}
-
-        {/* Categories */}
-        <div className="bg-white rounded-xl shadow overflow-hidden">
-
-          <div className="px-6 py-5 border-b">
-            <h2 className="text-xl font-bold">
-              All Categories
-            </h2>
-
-            <p className="text-sm text-gray-500 mt-1">
-              {categories.length} categor
-              {categories.length === 1 ? "y" : "ies"}
-            </p>
-          </div>
-
-          {categories.length === 0 ? (
-            <div className="py-16 text-center">
-
-              <p className="text-gray-500 mb-4">
-                No categories found.
-              </p>
-
-              <button
-                onClick={openCreateForm}
-                className="bg-black text-white px-5 py-3 rounded-lg"
+    
+              {/* Form Body */}
+              <form
+                onSubmit={handleSubmit}
+                className="p-6 space-y-6"
               >
-                + Add Category
-              </button>
-
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-
-              <table className="w-full">
-
-                <thead className="bg-gray-50 border-b">
-
-                  <tr>
-
-                    <th className="text-left px-6 py-4">
-                      Category
-                    </th>
-
-                    <th className="text-left px-6 py-4">
-                      Slug
-                    </th>
-
-                    <th className="text-left px-6 py-4">
-                      Description
-                    </th>
-
-                    <th className="text-right px-6 py-4">
-                      Actions
-                    </th>
-
-                  </tr>
-
-                </thead>
-
-                <tbody>
-
-                  {categories.map((category) => (
-
-                    <tr
-                      key={category.id}
-                      className="border-b last:border-b-0 hover:bg-gray-50"
-                    >
-
-                      {/* Category */}
-                      <td className="px-6 py-4">
-
-                        <div className="flex items-center gap-4">
-
-                          {category.image ? (
-                            <img
-                              src={category.image}
-                              alt={category.name}
-                              className="w-12 h-12 rounded-lg object-cover border"
-                              onError={(e) => {
-                                e.currentTarget.style.display =
-                                  "none";
-                              }}
-                            />
-                          ) : (
-                            <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400">
-                              —
-                            </div>
-                          )}
-
-                          <div>
-
-                            <p className="font-semibold">
-                              {category.name}
-                            </p>
-
-                            <p className="text-xs text-gray-400">
-                              ID: {category.id}
-                            </p>
-
-                          </div>
-
-                        </div>
-
-                      </td>
-
-                      {/* Slug */}
-                      <td className="px-6 py-4">
-
-                        <span className="bg-gray-100 px-3 py-1 rounded-lg text-sm">
-                          {category.slug}
-                        </span>
-
-                      </td>
-
-                      {/* Description */}
-                      <td className="px-6 py-4 text-gray-600 max-w-md">
-
-                        {category.description || "—"}
-
-                      </td>
-
-                      {/* Actions */}
-                      <td className="px-6 py-4">
-
-                        <div className="flex justify-end gap-2">
-
-                          <button
-                            onClick={() =>
-                              openEditForm(category)
-                            }
-                            className="px-4 py-2 border rounded-lg hover:bg-gray-100 transition"
-                          >
-                            Edit
-                          </button>
-
-                          <button
-                            onClick={() =>
-                              handleDelete(category.id)
-                            }
-                            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-                          >
-                            Delete
-                          </button>
-
-                        </div>
-
-                      </td>
-
-                    </tr>
-
-                  ))}
-
-                </tbody>
-
-              </table>
-
+    
+                {/* Name */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Category Name
+                  </label>
+    
+                  <input
+                    type="text"
+                    name="name"
+                    value={form.name}
+                    onChange={handleChange}
+                    placeholder="e.g. Electronics"
+                    required
+                    className="w-full border border-gray-300 rounded-lg
+                               px-4 py-3
+                               focus:outline-none
+                               focus:ring-2 focus:ring-black
+                               focus:border-transparent"
+                  />
+                </div>
+    
+                {/* Description */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Description
+                  </label>
+    
+                  <textarea
+                    name="description"
+                    value={form.description}
+                    onChange={handleChange}
+                    placeholder="Describe this category..."
+                    rows={4}
+                    className="w-full border border-gray-300 rounded-lg
+                               px-4 py-3
+                               resize-none
+                               focus:outline-none
+                               focus:ring-2 focus:ring-black
+                               focus:border-transparent"
+                  />
+                </div>
+    
+                {/* Image */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Image URL
+                  </label>
+    
+                  <input
+                    type="url"
+                    name="image"
+                    value={form.image}
+                    onChange={handleChange}
+                    placeholder="https://example.com/image.jpg"
+                    className="w-full border border-gray-300 rounded-lg
+                               px-4 py-3
+                               focus:outline-none
+                               focus:ring-2 focus:ring-black
+                               focus:border-transparent"
+                  />
+    
+                  {/* Image Preview */}
+                  {form.image && (
+                    <div className="mt-4">
+                      <p className="text-xs text-gray-500 mb-2">
+                        Preview
+                      </p>
+    
+                      <img
+                        src={form.image}
+                        alt="Category preview"
+                        className="w-24 h-24 rounded-lg object-cover border"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+    
+                {/* Buttons */}
+                <div className="flex flex-col sm:flex-row gap-3 pt-2">
+    
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="bg-black text-white px-6 py-3 rounded-lg
+                               hover:bg-gray-800
+                               disabled:opacity-50
+                               disabled:cursor-not-allowed
+                               transition"
+                  >
+                    {saving
+                      ? "Saving..."
+                      : editingId
+                      ? "Update Category"
+                      : "Create Category"}
+                  </button>
+    
+                  <button
+                    type="button"
+                    onClick={closeForm}
+                    className="border border-gray-300 px-6 py-3 rounded-lg
+                               hover:bg-gray-50 transition"
+                  >
+                    Cancel
+                  </button>
+    
+                </div>
+    
+              </form>
             </div>
           )}
-
+    
+          {/* Categories Card */}
+          <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
+    
+            {/* Card Header */}
+            <div className="px-6 py-5 border-b">
+    
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+    
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">
+                    All Categories
+                  </h2>
+    
+                  <p className="text-sm text-gray-500 mt-1">
+                    Manage all product categories
+                  </p>
+                </div>
+    
+                <span className="text-sm text-gray-500">
+                  {categories.length}{" "}
+                  {categories.length === 1
+                    ? "category"
+                    : "categories"}
+                </span>
+    
+              </div>
+    
+            </div>
+    
+            {/* Empty State */}
+            {categories.length === 0 ? (
+              <div className="py-20 text-center">
+    
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                  <span className="text-2xl">📂</span>
+                </div>
+    
+                <h3 className="text-lg font-semibold text-gray-900">
+                  No categories yet
+                </h3>
+    
+                <p className="text-gray-500 mt-1 mb-6">
+                  Create your first category to organize your products.
+                </p>
+    
+                <button
+                  onClick={openCreateForm}
+                  className="bg-black text-white px-5 py-3 rounded-lg
+                             hover:bg-gray-800 transition"
+                >
+                  + Add Category
+                </button>
+    
+              </div>
+            ) : (
+    
+              /* Desktop Table */
+              <div className="overflow-x-auto">
+    
+                <table className="w-full">
+    
+                  <thead className="bg-gray-50 border-b">
+    
+                    <tr>
+    
+                      <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">
+                        Category
+                      </th>
+    
+                      <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">
+                        Slug
+                      </th>
+    
+                      <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">
+                        Description
+                      </th>
+    
+                      <th className="text-right px-6 py-4 text-sm font-semibold text-gray-700">
+                        Actions
+                      </th>
+    
+                    </tr>
+    
+                  </thead>
+    
+                  <tbody>
+    
+                    {categories.map((category) => (
+    
+                      <tr
+                        key={category.id}
+                        className="border-b last:border-b-0
+                                   hover:bg-gray-50
+                                   transition"
+                      >
+    
+                        {/* Category */}
+                        <td className="px-6 py-4">
+    
+                          <div className="flex items-center gap-4">
+    
+                            {category.image ? (
+    
+                              <img
+                                src={category.image}
+                                alt={category.name}
+                                className="w-12 h-12 rounded-xl
+                                           object-cover border
+                                           flex-shrink-0"
+                                onError={(e) => {
+                                  e.currentTarget.style.display =
+                                    "none";
+                                }}
+                              />
+    
+                            ) : (
+    
+                              <div
+                                className="w-12 h-12 rounded-xl
+                                           bg-gray-100
+                                           flex items-center
+                                           justify-center
+                                           text-gray-400
+                                           flex-shrink-0"
+                              >
+                                📁
+                              </div>
+    
+                            )}
+    
+                            <div className="min-w-0">
+    
+                              <p className="font-semibold text-gray-900">
+                                {category.name}
+                              </p>
+    
+                              <p className="text-xs text-gray-400 mt-1">
+                                ID: {category.id}
+                              </p>
+    
+                            </div>
+    
+                          </div>
+    
+                        </td>
+    
+                        {/* Slug */}
+                        <td className="px-6 py-4">
+    
+                          <span
+                            className="inline-block
+                                       bg-gray-100
+                                       text-gray-700
+                                       px-3 py-1
+                                       rounded-lg
+                                       text-sm"
+                          >
+                            {category.slug}
+                          </span>
+    
+                        </td>
+    
+                        {/* Description */}
+                        <td className="px-6 py-4">
+    
+                          <p className="text-gray-600 max-w-md truncate">
+                            {category.description || "No description"}
+                          </p>
+    
+                        </td>
+    
+                        {/* Actions */}
+                        <td className="px-6 py-4">
+    
+                          <div className="flex justify-end gap-2">
+    
+                            <button
+                              onClick={() =>
+                                openEditForm(category)
+                              }
+                              className="px-4 py-2
+                                         border border-gray-300
+                                         rounded-lg
+                                         hover:bg-gray-100
+                                         transition"
+                            >
+                              Edit
+                            </button>
+    
+                            <button
+                              onClick={() =>
+                                handleDelete(category.id)
+                              }
+                              className="px-4 py-2
+                                         bg-red-600
+                                         text-white
+                                         rounded-lg
+                                         hover:bg-red-700
+                                         transition"
+                            >
+                              Delete
+                            </button>
+    
+                          </div>
+    
+                        </td>
+    
+                      </tr>
+    
+                    ))}
+    
+                  </tbody>
+    
+                </table>
+    
+              </div>
+    
+            )}
+    
+          </div>
+    
         </div>
-
       </div>
-    </div>
-  );
-}
+    );}
+  }

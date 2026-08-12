@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ShoppingBag,
@@ -12,10 +12,13 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
+import { getCart } from "../services/cart.service";
+
+const BURGUNDY = "#800020";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [cartCount] = useState(3);
+  const [cartCount, setCartCount] = useState(0);
 
   const navigate = useNavigate();
 
@@ -26,9 +29,46 @@ const Navbar = () => {
     isAdmin,
   } = useAuth();
 
+  // ==========================================
+  // Load cart count
+  // ==========================================
+
+  const loadCartCount = async () => {
+    if (!isAuthenticated) {
+      setCartCount(0);
+      return;
+    }
+
+    try {
+      const response = await getCart();
+
+      const items = response.data?.items || [];
+
+      const totalQuantity = items.reduce(
+        (total: number, item: any) =>
+          total + Number(item.quantity || 0),
+        0
+      );
+
+      setCartCount(totalQuantity);
+    } catch (error) {
+      console.error("Failed to load cart:", error);
+      setCartCount(0);
+    }
+  };
+
+  useEffect(() => {
+    loadCartCount();
+  }, [isAuthenticated]);
+
+  // ==========================================
+  // Logout
+  // ==========================================
+
   const handleLogout = async () => {
     try {
       await logout();
+      setCartCount(0);
       navigate("/login");
     } catch (error) {
       console.error(error);
@@ -41,34 +81,54 @@ const Navbar = () => {
 
         <div className="flex items-center justify-between">
 
-          {/* Logo */}
+          {/* ======================================
+              Logo
+          ====================================== */}
 
-          <Link to="/" className="text-2xl font-bold">
-            EFUYE TELETE
+          <Link
+            to="/"
+            className="text-2xl font-bold tracking-tight"
+            style={{ color: BURGUNDY }}
+          >
+            RUuby Store
           </Link>
 
-          {/* Desktop Navigation */}
+          {/* ======================================
+              Desktop Navigation
+          ====================================== */}
 
-          <nav className="hidden md:flex space-x-8">
-            <Link to="/">HOME</Link>
+          <nav className="hidden md:flex items-center space-x-8 text-sm font-medium">
 
-            <Link to="/products">SHOP</Link>
+            <Link
+              to="/"
+              className="hover:text-[#800020] transition"
+            >
+              HOME
+            </Link>
 
-            <Link to="/men">MEN</Link>
+            <Link
+              to="/products"
+              className="hover:text-[#800020] transition"
+            >
+              SHOP
+            </Link>
 
-            <Link to="/women">WOMEN</Link>
-
+          
             {isAdmin && (
               <Link
                 to="/admin/dashboard"
-                className="font-medium text-red-600"
+                className="font-semibold"
+                style={{ color: BURGUNDY }}
               >
                 ADMIN
               </Link>
             )}
+
           </nav>
 
-          {/* Desktop Right Side */}
+          {/* ======================================
+              Desktop Right Side
+          ====================================== */}
 
           <div className="hidden md:flex items-center space-x-5">
 
@@ -76,7 +136,7 @@ const Navbar = () => {
               <>
                 <Link
                   to="/profile"
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 hover:text-[#800020] transition"
                 >
                   <User size={20} />
                   <span>{user?.fullName}</span>
@@ -92,30 +152,51 @@ const Navbar = () => {
               </>
             ) : (
               <>
-                <Link to="/login">
+                <Link
+                  to="/login"
+                  className="hover:text-[#800020] transition"
+                >
                   Login
                 </Link>
 
-                <Link to="/account">
+                <Link
+                  to="/account"
+                  className="hover:text-[#800020] transition"
+                >
                   Register
                 </Link>
               </>
             )}
 
+            {/* Admin Dashboard */}
+
             {isAdmin && (
-              <Link to="/admin/dashboard">
+              <Link
+                to="/admin/dashboard"
+                className="hover:text-[#800020] transition"
+              >
                 <LayoutDashboard size={20} />
               </Link>
             )}
+
+            {/* ======================================
+                Cart
+            ====================================== */}
 
             <Link
               to="/cart"
               className="relative"
             >
-              <ShoppingBag size={22} />
+              <ShoppingBag
+                size={22}
+                className="hover:text-[#800020] transition"
+              />
 
               {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-black text-white text-xs flex items-center justify-center">
+                <span
+                  className="absolute -top-2 -right-2 w-5 h-5 rounded-full text-white text-xs flex items-center justify-center"
+                  style={{ backgroundColor: BURGUNDY }}
+                >
                   {cartCount}
                 </span>
               )}
@@ -123,7 +204,9 @@ const Navbar = () => {
 
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* ======================================
+              Mobile Menu Button
+          ====================================== */}
 
           <button
             className="md:hidden"
@@ -138,30 +221,59 @@ const Navbar = () => {
 
         </div>
 
-        {/* Mobile Menu */}
+        {/* ======================================
+            Mobile Menu
+        ====================================== */}
 
         {isMenuOpen && (
-          <div className="md:hidden mt-6">
+          <div className="md:hidden mt-6 border-t pt-5">
 
-            <nav className="flex flex-col gap-4">
+            <nav className="flex flex-col gap-4 text-sm font-medium">
 
-              <Link to="/">HOME</Link>
+              <Link
+                to="/"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                HOME
+              </Link>
 
-              <Link to="/products">SHOP</Link>
+              <Link
+                to="/products"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                SHOP
+              </Link>
 
-              <Link to="/men">MEN</Link>
+              <Link
+                to="/men"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                MEN
+              </Link>
 
-              <Link to="/women">WOMEN</Link>
+              <Link
+                to="/women"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                WOMEN
+              </Link>
 
               {isAdmin && (
-                <Link to="/admin/dashboard">
+                <Link
+                  to="/admin/dashboard"
+                  onClick={() => setIsMenuOpen(false)}
+                  style={{ color: BURGUNDY }}
+                >
                   ADMIN DASHBOARD
                 </Link>
               )}
 
               {isAuthenticated ? (
                 <>
-                  <Link to="/profile">
+                  <Link
+                    to="/profile"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
                     My Profile
                   </Link>
 
@@ -174,18 +286,35 @@ const Navbar = () => {
                 </>
               ) : (
                 <>
-                  <Link to="/login">
+                  <Link
+                    to="/login"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
                     Login
                   </Link>
 
-                  <Link to="/account">
+                  <Link
+                    to="/account"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
                     Register
                   </Link>
                 </>
               )}
 
-              <Link to="/cart">
-                Cart ({cartCount})
+              {/* Mobile Cart */}
+
+              <Link
+                to="/cart"
+                onClick={() => setIsMenuOpen(false)}
+                className="flex items-center gap-2"
+              >
+                <ShoppingBag size={18} />
+
+                <span>
+                  Cart
+                  {cartCount > 0 && ` (${cartCount})`}
+                </span>
               </Link>
 
             </nav>

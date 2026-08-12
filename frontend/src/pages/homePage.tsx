@@ -3,7 +3,7 @@ import PromoSection from "@/component/PromoSection"
 import Footer from "@/component/Footer"
 import CategoryGrid from "@/component/CategoryGrid"
 import Navbar from "@/component/Navbar"
-import Productlist from "../pages/productList"
+import Productlist from "../pages/productlistondashboard"
 const HomePage = () => {
   return (
     <div>
