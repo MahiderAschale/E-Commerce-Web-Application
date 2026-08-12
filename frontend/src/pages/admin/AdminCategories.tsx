@@ -220,8 +220,29 @@ export default function AdminCategories() {
   // ==========================================
   // Error
   // ==========================================
-
   if (error) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
+        <div className="bg-white rounded-xl shadow-sm border p-8 text-center">
+          <h2 className="text-xl font-bold text-red-600 mb-2">
+            Failed to load categories
+          </h2>
+  
+          <p className="text-gray-600 mb-6">
+            {error}
+          </p>
+  
+          <button
+            onClick={loadCategories}
+            className="bg-black text-white px-5 py-3 rounded-lg hover:bg-gray-800"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
     return (
       <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
         <div className="max-w-7xl mx-auto">
@@ -628,4 +649,4 @@ export default function AdminCategories() {
         </div>
       </div>
     );}
-  }
+  
