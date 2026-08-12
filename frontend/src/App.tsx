@@ -13,9 +13,10 @@ import OrderDetailPage from "./pages/order-detail";
 import OrdersPage from "./pages/OrdersPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminProducts from "./pages/admin/AdminProducts";
-import './App.css'
+import AdminCategories from "./pages/admin/AdminCategories";
 import AddressPage from "./pages/AddressPage";
 
+import './App.css'
 
 export default function App() {
 return(
@@ -33,14 +34,8 @@ return(
       <Route path="/orders"element={<ProtectedRoute><OrdersPage /></ProtectedRoute>}/>
       <Route path="/orders/:id" element={<ProtectedRoute>  <OrderDetailPage /></ProtectedRoute> }/>
       <Route path="/admin/dashboard"element={<ProtectedRoute><AdminDashboard /></ProtectedRoute> }/>
-      <Route
-  path="/admin/products"
-  element={
-    <ProtectedRoute>
-      <AdminProducts />
-    </ProtectedRoute>
-  }
-/>
+      <Route path="/admin/products"element={<ProtectedRoute><AdminProducts /> </ProtectedRoute>}/>
+     <Route path="/admin/categories"element={<ProtectedRoute>  <AdminCategories />  </ProtectedRoute>}/>
       </Routes>
 
      </>
