@@ -11,7 +11,8 @@ import ProtectedRoute from "./component/ProtectedRoute";
 import PaymentSuccessPage from "./pages/payment-success";
 import OrderDetailPage from "./pages/order-detail";
 import OrdersPage from "./pages/OrdersPage";
-
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminProducts from "./pages/admin/AdminProducts";
 import './App.css'
 import AddressPage from "./pages/AddressPage";
 
@@ -31,7 +32,15 @@ return(
       <Route path="/payment-success"element={<PaymentSuccessPage />}/>
       <Route path="/orders"element={<ProtectedRoute><OrdersPage /></ProtectedRoute>}/>
       <Route path="/orders/:id" element={<ProtectedRoute>  <OrderDetailPage /></ProtectedRoute> }/>
-      
+      <Route path="/admin/dashboard"element={<ProtectedRoute><AdminDashboard /></ProtectedRoute> }/>
+      <Route
+  path="/admin/products"
+  element={
+    <ProtectedRoute>
+      <AdminProducts />
+    </ProtectedRoute>
+  }
+/>
       </Routes>
 
      </>
