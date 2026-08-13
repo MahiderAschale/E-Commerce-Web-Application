@@ -8,7 +8,6 @@ import {
 } from "../../services/product.service";
 import { getCategories } from "../../services/category.service";
 
-
 interface Product {
   id: string;
   name: string;
@@ -16,7 +15,7 @@ interface Product {
   price: string;
   stock: number;
   sku: string;
-  status: "ACTIVE" | "INACTIVE";
+  status: "ACTIVE" | "OUT_OF_STOCK" | "DRAFT";
   featured: boolean;
   category?: {
     id: string;
@@ -36,7 +35,7 @@ interface ProductForm {
   stock: string;
   sku: string;
   categoryId: string;
-  status: "ACTIVE" | "INACTIVE";
+  status: "ACTIVE" | "OUT_OF_STOCK" | "DRAFT";
   featured: boolean;
 }
 
@@ -66,7 +65,10 @@ export default function AdminProducts() {
     useState<string | null>(null);
 
   const [form, setForm] = useState<ProductForm>(emptyForm);
+
+  // Selected images for the current product
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
+
   // ==========================================
   // LOAD PRODUCTS
   // ==========================================
@@ -134,15 +136,27 @@ export default function AdminProducts() {
       [name]: value,
     }));
   };
+
+  // ==========================================
+  // IMAGE CHANGE
+  // ==========================================
+
   const handleImageChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     if (!e.target.files) return;
-  
+
     const files = Array.from(e.target.files);
-  
+
     setSelectedImages(files);
+
+    // Allow selecting the same file again later
+    e.target.value = "";
   };
+
+  // ==========================================
+  // FEATURED CHANGE
+  // ==========================================
 
   const handleFeaturedChange = (
     e: React.ChangeEvent<HTMLInputElement>
@@ -160,7 +174,10 @@ export default function AdminProducts() {
   const openAddForm = () => {
     setEditingProductId(null);
     setForm(emptyForm);
+
+    // Important: clear previous images
     setSelectedImages([]);
+
     setError("");
     setSuccess("");
     setShowForm(true);
@@ -184,6 +201,9 @@ export default function AdminProducts() {
       featured: product.featured,
     });
 
+    // Important: don't carry images from another product
+    setSelectedImages([]);
+
     setError("");
     setSuccess("");
     setShowForm(true);
@@ -195,7 +215,7 @@ export default function AdminProducts() {
 
   const closeForm = () => {
     if (saving) return;
-  
+
     setShowForm(false);
     setEditingProductId(null);
     setForm(emptyForm);
@@ -214,7 +234,10 @@ export default function AdminProducts() {
     setError("");
     setSuccess("");
 
-    // Basic validation
+    // ==========================================
+    // BASIC VALIDATION
+    // ==========================================
+
     if (
       !form.name ||
       !form.description ||
@@ -231,7 +254,9 @@ export default function AdminProducts() {
     const stock = Number(form.stock);
 
     if (isNaN(price) || price <= 0) {
-      setError("Price must be a valid number greater than 0.");
+      setError(
+        "Price must be a valid number greater than 0."
+      );
       return;
     }
 
@@ -243,6 +268,10 @@ export default function AdminProducts() {
     try {
       setSaving(true);
 
+      // ==========================================
+      // PRODUCT DATA
+      // ==========================================
+
       const productData = {
         name: form.name.trim(),
         description: form.description.trim(),
@@ -250,20 +279,20 @@ export default function AdminProducts() {
         stock,
         sku: form.sku.trim(),
         categoryId: form.categoryId,
-        status: form.status,
+        status: form.status === "OUT_OF_STOCK" ? "INACTIVE" : (form.status as "ACTIVE" | "INACTIVE"),
         featured: form.featured,
       };
 
+      // ==========================================
+      // UPDATE PRODUCT
+      // ==========================================
+
       if (editingProductId) {
-        // ==========================================
-        // UPDATE PRODUCT
-        // ==========================================
-      
         await updateProduct(
           editingProductId,
           productData
         );
-      
+
         // Upload new images if selected
         if (selectedImages.length > 0) {
           await uploadProductImages(
@@ -271,39 +300,55 @@ export default function AdminProducts() {
             selectedImages
           );
         }
-      
+
         setSuccess(
           "Product updated successfully."
         );
-      } else {
-        // ==========================================
-        // CREATE PRODUCT
-        // ==========================================
-      
-        const response = await createProduct(productData);
-      
+      }
+
+      // ==========================================
+      // CREATE PRODUCT
+      // ==========================================
+
+      else {
+        const response = await createProduct(
+          productData
+        );
+
         const createdProduct = response.data;
-      
-        // Upload images after product is created
-        if (selectedImages.length > 0) {
+
+        // Upload images AFTER product creation
+        // because we need the product ID
+        if (
+          selectedImages.length > 0 &&
+          createdProduct?.id
+        ) {
           await uploadProductImages(
             createdProduct.id,
             selectedImages
           );
         }
-      
+
         setSuccess(
           "Product created successfully."
         );
       }
 
-        
+      // ==========================================
+      // REFRESH PRODUCTS
+      // ==========================================
 
       await loadProducts();
+
+      // ==========================================
+      // RESET FORM
+      // ==========================================
 
       setShowForm(false);
       setEditingProductId(null);
       setForm(emptyForm);
+      setSelectedImages([]);
+
     } catch (err: any) {
       console.error(
         "Failed to save product:",
@@ -377,127 +422,123 @@ export default function AdminProducts() {
   return (
     <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
-  
+
         {/* ================================
             HEADER
         ================================= */}
-  
+
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-  
+
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
               Products
             </h1>
-  
+
             <p className="text-gray-500 mt-1">
               Manage your store products
             </p>
           </div>
-  
+
           <button
             onClick={openAddForm}
             className="w-full sm:w-auto bg-black text-white px-5 py-3 rounded-lg font-medium hover:bg-gray-800 transition"
           >
             + Add Product
           </button>
-  
+
         </div>
-  
-  
+
         {/* ================================
             SUCCESS MESSAGE
         ================================= */}
-  
+
         {success && (
           <div className="mb-6 rounded-lg bg-green-100 border border-green-200 text-green-700 px-4 py-3">
             {success}
           </div>
         )}
-  
-  
+
         {/* ================================
             ERROR MESSAGE
         ================================= */}
-  
+
         {error && (
           <div className="mb-6 rounded-lg bg-red-100 border border-red-200 text-red-700 px-4 py-3">
             {error}
           </div>
         )}
-  
-  
+
         {/* ================================
             PRODUCT SUMMARY
         ================================= */}
-  
+
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-  
+
           <div className="bg-white rounded-xl shadow-sm p-5">
             <p className="text-sm text-gray-500">
               Total Products
             </p>
-  
+
             <p className="text-3xl font-bold text-gray-900 mt-2">
               {products.length}
             </p>
           </div>
-  
-  
+
           <div className="bg-white rounded-xl shadow-sm p-5">
             <p className="text-sm text-gray-500">
               Active Products
             </p>
-  
+
             <p className="text-3xl font-bold text-green-600 mt-2">
               {
                 products.filter(
-                  (product) => product.status === "ACTIVE"
+                  (product) =>
+                    product.status === "ACTIVE"
                 ).length
               }
             </p>
           </div>
-  
-  
+
           <div className="bg-white rounded-xl shadow-sm p-5">
             <p className="text-sm text-gray-500">
               Featured Products
             </p>
-  
+
             <p className="text-3xl font-bold text-yellow-600 mt-2">
               {
                 products.filter(
-                  (product) => product.featured
+                  (product) =>
+                    product.featured
                 ).length
               }
             </p>
           </div>
-  
+
         </div>
-  
-  
+
         {/* ================================
             ADD / EDIT FORM
         ================================= */}
-  
+
         {showForm && (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-7 mb-8">
-  
+
             <div className="flex items-center justify-between mb-6">
-  
+
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">
                   {editingProductId
                     ? "Edit Product"
                     : "Add Product"}
                 </h2>
-  
+
                 <p className="text-gray-500 mt-1">
                   {editingProductId
                     ? "Update product information"
                     : "Create a new product"}
                 </p>
               </div>
-  
+
               <button
                 type="button"
                 onClick={closeForm}
@@ -506,22 +547,21 @@ export default function AdminProducts() {
               >
                 ✕
               </button>
-  
+
             </div>
-  
-  
+
             <form
               onSubmit={handleSubmit}
               className="space-y-6"
             >
-  
+
               {/* Product Name */}
-  
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Product Name
                 </label>
-  
+
                 <input
                   type="text"
                   name="name"
@@ -531,15 +571,14 @@ export default function AdminProducts() {
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-black focus:border-transparent"
                 />
               </div>
-  
-  
+
               {/* Description */}
-  
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Description
                 </label>
-  
+
                 <textarea
                   name="description"
                   value={form.description}
@@ -549,17 +588,16 @@ export default function AdminProducts() {
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none"
                 />
               </div>
-  
-  
+
               {/* Price / Stock */}
-  
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-  
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Price (ETB)
                   </label>
-  
+
                   <input
                     type="number"
                     name="price"
@@ -571,13 +609,12 @@ export default function AdminProducts() {
                     className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-black focus:border-transparent"
                   />
                 </div>
-  
-  
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Stock
                   </label>
-  
+
                   <input
                     type="number"
                     name="stock"
@@ -588,17 +625,16 @@ export default function AdminProducts() {
                     className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-black focus:border-transparent"
                   />
                 </div>
-  
+
               </div>
-  
-  
+
               {/* SKU */}
-  
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   SKU
                 </label>
-  
+
                 <input
                   type="text"
                   name="sku"
@@ -608,25 +644,24 @@ export default function AdminProducts() {
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-black focus:border-transparent"
                 />
               </div>
-  
-  
+
               {/* Category */}
-  
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Category
                 </label>
-  
+
                 <select
                   name="categoryId"
                   value={form.categoryId}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 bg-white outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 bg-white outline-none focus:ring-2 focus:ring-black focus:border-transparent text-black"
                 >
                   <option value="">
                     Select category
                   </option>
-  
+
                   {categories.map((category) => (
                     <option
                       key={category.id}
@@ -637,98 +672,110 @@ export default function AdminProducts() {
                   ))}
                 </select>
               </div>
-  
-            {/* Product Images */}
 
-<div>
-  <label className="block text-sm font-medium text-gray-700 mb-2">
-    Product Images
-  </label>
+              {/* ==========================================
+                  PRODUCT IMAGES
+              ========================================== */}
 
-  <input
-    type="file"
-    accept="image/*"
-    multiple
-    onChange={handleImageChange}
-    className="w-full border border-gray-300 rounded-lg px-4 py-3
-               bg-white
-               file:mr-4
-               file:py-2
-               file:px-4
-               file:rounded-lg
-               file:border-0
-               file:bg-black
-               file:text-white
-               file:cursor-pointer"
-  />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Product Images
+                </label>
 
-  <p className="text-xs text-gray-500 mt-2">
-    You can select one or multiple product images.
-  </p>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageChange}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3
+                             bg-white
+                             file:mr-4
+                             file:py-2
+                             file:px-4
+                             file:rounded-lg
+                             file:border-0
+                             file:bg-black
+                             file:text-white
+                             file:cursor-pointer"
+                />
 
-  {/* Selected images preview */}
+                <p className="text-xs text-gray-500 mt-2">
+                  You can select one or multiple product images.
+                </p>
 
-  {selectedImages.length > 0 && (
-    <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
-      {selectedImages.map((file, index) => (
-        <div
-          key={`${file.name}-${index}`}
-          className="relative"
-        >
-          <img
-            src={URL.createObjectURL(file)}
-            alt={`Product preview ${index + 1}`}
-            className="w-full h-32 object-cover rounded-lg border"
-          />
+                {/* Selected images preview */}
 
-          <button
-            type="button"
-            onClick={() => {
-              setSelectedImages((current) =>
-                current.filter((_, i) => i !== index)
-              );
-            }}
-            className="absolute top-2 right-2 w-7 h-7 rounded-full
-                       bg-red-600 text-white
-                       hover:bg-red-700
-                       flex items-center justify-center"
-          >
-            ✕
-          </button>
-        </div>
-      ))}
-    </div>
-  )}
-</div>
-  
+                {selectedImages.length > 0 && (
+                  <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
+
+                    {selectedImages.map(
+                      (file, index) => (
+                        <div
+                          key={`${file.name}-${index}`}
+                          className="relative"
+                        >
+
+                          <img
+                            src={URL.createObjectURL(
+                              file
+                            )}
+                            alt={`Product preview ${
+                              index + 1
+                            }`}
+                            className="w-full h-32 object-cover rounded-lg border"
+                          />
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedImages(
+                                (current) =>
+                                  current.filter(
+                                    (_, i) =>
+                                      i !== index
+                                  )
+                              );
+                            }}
+                            className="absolute top-2 right-2 w-7 h-7 rounded-full
+                                       bg-red-600 text-white
+                                       hover:bg-red-700
+                                       flex items-center justify-center"
+                          >
+                            ✕
+                          </button>
+
+                        </div>
+                      )
+                    )}
+
+                  </div>
+                )}
+
+              </div>
+
               {/* Status */}
-  
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Status
                 </label>
-  
+
                 <select
                   name="status"
                   value={form.status}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 bg-white outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                  className="w-full border border-gray-300 text-black x-4 py-3 bg-white outline-none focus:ring-2 focus:ring-black focus:border-transparent"
                 >
-                  <option value="ACTIVE">
-                    ACTIVE
-                  </option>
-  
-                  <option value="INACTIVE">
-                    INACTIVE
-                  </option>
+                 <option value="ACTIVE">ACTIVE</option>
+                 <option value="OUT_OF_STOCK">OUT OF STOCK</option>
+                 <option value="DRAFT">DRAFT</option>
                 </select>
               </div>
-  
-  
+
               {/* Featured */}
-  
+
               <div className="flex items-center gap-3">
-  
+
                 <input
                   type="checkbox"
                   id="featured"
@@ -736,21 +783,20 @@ export default function AdminProducts() {
                   onChange={handleFeaturedChange}
                   className="w-4 h-4 accent-black"
                 />
-  
+
                 <label
                   htmlFor="featured"
                   className="text-sm font-medium text-gray-700"
                 >
                   Featured Product
                 </label>
-  
+
               </div>
-  
-  
+
               {/* Buttons */}
-  
+
               <div className="flex flex-col sm:flex-row gap-3 pt-4">
-  
+
                 <button
                   type="submit"
                   disabled={saving}
@@ -762,8 +808,7 @@ export default function AdminProducts() {
                     ? "Update Product"
                     : "Create Product"}
                 </button>
-  
-  
+
                 <button
                   type="button"
                   onClick={closeForm}
@@ -772,138 +817,132 @@ export default function AdminProducts() {
                 >
                   Cancel
                 </button>
-  
+
               </div>
-  
+
             </form>
-  
+
           </div>
         )}
-  
-  
+
         {/* ================================
             PRODUCT TABLE
         ================================= */}
-  
+
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-  
+
           <div className="px-5 sm:px-6 py-5 border-b">
-  
+
             <h2 className="text-xl font-bold text-gray-900">
               All Products
             </h2>
-  
+
             <p className="text-sm text-gray-500 mt-1">
               View and manage your store inventory
             </p>
-  
+
           </div>
-  
-  
+
           <div className="overflow-x-auto">
-  
+
             <table className="w-full">
-  
+
               <thead className="bg-gray-50 border-b">
-  
+
                 <tr>
-  
+
                   <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">
                     Product
                   </th>
-  
+
                   <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">
                     Category
                   </th>
-  
+
                   <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">
                     Price
                   </th>
-  
+
                   <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">
                     Stock
                   </th>
-  
+
                   <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">
                     Status
                   </th>
-  
+
                   <th className="text-right px-6 py-4 text-sm font-semibold text-gray-600">
                     Actions
                   </th>
-  
+
                 </tr>
-  
+
               </thead>
-  
-  
+
               <tbody>
-  
+
                 {products.length === 0 ? (
-  
+
                   <tr>
-  
+
                     <td
                       colSpan={6}
                       className="text-center py-16 text-gray-500"
                     >
                       No products found.
                     </td>
-  
+
                   </tr>
-  
+
                 ) : (
-  
+
                   products.map((product) => (
-  
+
                     <tr
                       key={product.id}
                       className="border-b last:border-b-0 hover:bg-gray-50 transition"
                     >
-  
+
                       {/* Product */}
-  
+
                       <td className="px-6 py-5">
-  
+
                         <div>
-  
+
                           <p className="font-semibold text-gray-900">
                             {product.name}
                           </p>
-  
+
                           <p className="text-sm text-gray-500 mt-1">
                             SKU: {product.sku}
                           </p>
-  
+
                           {product.featured && (
                             <span className="inline-block mt-1 text-xs font-medium text-yellow-600">
                               ★ Featured
                             </span>
                           )}
-  
+
                         </div>
-  
+
                       </td>
-  
-  
+
                       {/* Category */}
-  
+
                       <td className="px-6 py-5 text-gray-600">
                         {product.category?.name || "—"}
                       </td>
-  
-  
+
                       {/* Price */}
-  
+
                       <td className="px-6 py-5 font-semibold text-gray-900">
                         {Number(product.price).toFixed(2)} ETB
                       </td>
-  
-  
+
                       {/* Stock */}
-  
+
                       <td className="px-6 py-5">
-  
+
                         <span
                           className={`font-medium ${
                             product.stock === 0
@@ -915,70 +954,73 @@ export default function AdminProducts() {
                         >
                           {product.stock}
                         </span>
-  
+
                       </td>
-  
-  
+
                       {/* Status */}
-  
+
                       <td className="px-6 py-5">
-  
+
                         <span
                           className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
-                            product.status === "ACTIVE"
+                            product.status ===
+                            "ACTIVE"
                               ? "bg-green-100 text-green-700"
                               : "bg-red-100 text-red-700"
                           }`}
                         >
                           {product.status}
                         </span>
-  
+
                       </td>
-  
-  
+
                       {/* Actions */}
-  
+
                       <td className="px-6 py-5">
-  
+
                         <div className="flex justify-end gap-2">
-  
+
                           <button
                             onClick={() =>
-                              openEditForm(product)
+                              openEditForm(
+                                product
+                              )
                             }
                             className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-100 transition"
                           >
                             Edit
                           </button>
-  
-  
+
                           <button
                             onClick={() =>
-                              handleDelete(product.id)
+                              handleDelete(
+                                product.id
+                              )
                             }
                             className="px-3 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition"
                           >
                             Delete
                           </button>
-  
+
                         </div>
-  
+
                       </td>
-  
+
                     </tr>
-  
+
                   ))
-  
+
                 )}
-  
+
               </tbody>
-  
+
             </table>
-  
+
           </div>
-  
+
         </div>
-  
+
       </div>
     </div>
-  );}
+  );
+}
