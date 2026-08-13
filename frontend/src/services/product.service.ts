@@ -63,11 +63,11 @@ export const uploadProductImages = async (
   const formData = new FormData();
 
   files.forEach((file) => {
-    formData.append("images", file);
+    formData.append("image", file);
   });
 
   const response = await api.post(
-    `/products/${productId}/images/multiple`,
+    `/products/${productId}/images`,
     formData
   );
 
