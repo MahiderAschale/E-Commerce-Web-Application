@@ -55,3 +55,21 @@ export const deleteProduct = async (id: string) => {
 
   return response.data;
 };
+
+export const uploadProductImages = async (
+  productId: string,
+  files: File[]
+) => {
+  const formData = new FormData();
+
+  files.forEach((file) => {
+    formData.append("image", file);
+  });
+
+  const response = await api.post(
+    `/products/${productId}/images/multiple`,
+    formData
+  );
+
+  return response.data;
+};

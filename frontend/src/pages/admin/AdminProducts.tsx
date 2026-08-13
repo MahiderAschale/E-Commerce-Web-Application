@@ -4,8 +4,10 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
+  uploadProductImages,
 } from "../../services/product.service";
 import { getCategories } from "../../services/category.service";
+
 
 interface Product {
   id: string;
@@ -64,7 +66,7 @@ export default function AdminProducts() {
     useState<string | null>(null);
 
   const [form, setForm] = useState<ProductForm>(emptyForm);
-
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
   // ==========================================
   // LOAD PRODUCTS
   // ==========================================
@@ -132,6 +134,15 @@ export default function AdminProducts() {
       [name]: value,
     }));
   };
+  const handleImageChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    if (!e.target.files) return;
+  
+    const files = Array.from(e.target.files);
+  
+    setSelectedImages(files);
+  };
 
   const handleFeaturedChange = (
     e: React.ChangeEvent<HTMLInputElement>
@@ -149,6 +160,7 @@ export default function AdminProducts() {
   const openAddForm = () => {
     setEditingProductId(null);
     setForm(emptyForm);
+    setSelectedImages([]);
     setError("");
     setSuccess("");
     setShowForm(true);
@@ -183,10 +195,11 @@ export default function AdminProducts() {
 
   const closeForm = () => {
     if (saving) return;
-
+  
     setShowForm(false);
     setEditingProductId(null);
     setForm(emptyForm);
+    setSelectedImages([]);
   };
 
   // ==========================================
@@ -242,23 +255,49 @@ export default function AdminProducts() {
       };
 
       if (editingProductId) {
-        // UPDATE
+        // ==========================================
+        // UPDATE PRODUCT
+        // ==========================================
+      
         await updateProduct(
           editingProductId,
           productData
         );
-
+      
+        // Upload new images if selected
+        if (selectedImages.length > 0) {
+          await uploadProductImages(
+            editingProductId,
+            selectedImages
+          );
+        }
+      
         setSuccess(
           "Product updated successfully."
         );
       } else {
-        // CREATE
-        await createProduct(productData);
-
+        // ==========================================
+        // CREATE PRODUCT
+        // ==========================================
+      
+        const response = await createProduct(productData);
+      
+        const createdProduct = response.data;
+      
+        // Upload images after product is created
+        if (selectedImages.length > 0) {
+          await uploadProductImages(
+            createdProduct.id,
+            selectedImages
+          );
+        }
+      
         setSuccess(
           "Product created successfully."
         );
       }
+
+        
 
       await loadProducts();
 
@@ -599,6 +638,68 @@ export default function AdminProducts() {
                 </select>
               </div>
   
+            {/* Product Images */}
+
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Product Images
+  </label>
+
+  <input
+    type="file"
+    accept="image/*"
+    multiple
+    onChange={handleImageChange}
+    className="w-full border border-gray-300 rounded-lg px-4 py-3
+               bg-white
+               file:mr-4
+               file:py-2
+               file:px-4
+               file:rounded-lg
+               file:border-0
+               file:bg-black
+               file:text-white
+               file:cursor-pointer"
+  />
+
+  <p className="text-xs text-gray-500 mt-2">
+    You can select one or multiple product images.
+  </p>
+
+  {/* Selected images preview */}
+
+  {selectedImages.length > 0 && (
+    <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
+      {selectedImages.map((file, index) => (
+        <div
+          key={`${file.name}-${index}`}
+          className="relative"
+        >
+          <img
+            src={URL.createObjectURL(file)}
+            alt={`Product preview ${index + 1}`}
+            className="w-full h-32 object-cover rounded-lg border"
+          />
+
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedImages((current) =>
+                current.filter((_, i) => i !== index)
+              );
+            }}
+            className="absolute top-2 right-2 w-7 h-7 rounded-full
+                       bg-red-600 text-white
+                       hover:bg-red-700
+                       flex items-center justify-center"
+          >
+            ✕
+          </button>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
   
               {/* Status */}
   
