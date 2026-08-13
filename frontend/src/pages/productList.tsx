@@ -82,7 +82,7 @@ const ProductListPage = () => {
 
           image:
             product.images.length > 0
-              ? product.images[0].url
+              ? product.images[0].imageUrl
               : "/placeholder.svg",
 
           rating: 5,

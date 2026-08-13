@@ -41,7 +41,7 @@ const fetchProduct = async () => {
       category: p.category,
       images:
         p.images.length > 0
-          ? p.images.map((img: any) => img.url)
+          ? p.images.map((img: any) => img.imageUrl)
           : ["/placeholder.svg"],
 
       rating: 5,
