@@ -279,7 +279,7 @@ export default function AdminProducts() {
         stock,
         sku: form.sku.trim(),
         categoryId: form.categoryId,
-        status: form.status === "OUT_OF_STOCK" ? "INACTIVE" : (form.status as "ACTIVE" | "INACTIVE"),
+        status: form.status as "ACTIVE" | "OUT_OF_STOCK" | "DRAFT",
         featured: form.featured,
       };
 

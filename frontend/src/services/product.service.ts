@@ -7,7 +7,7 @@ export interface CreateProductInput {
   stock: number;
   sku: string;
   featured?: boolean;
-  status?: "ACTIVE" | "INACTIVE";
+  status?: "ACTIVE" | "OUT_OF_STOCK" | "DRAFT";
   categoryId: string;
 }
 
@@ -63,7 +63,7 @@ export const uploadProductImages = async (
   const formData = new FormData();
 
   files.forEach((file) => {
-    formData.append("image", file);
+    formData.append("images", file);
   });
 
   const response = await api.post(
