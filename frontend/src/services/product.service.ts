@@ -60,14 +60,22 @@ export const uploadProductImages = async (
   productId: string,
   files: File[]
 ) => {
+  if (files.length === 0) {
+    return;
+  }
+
   const formData = new FormData();
 
+  const isMultipleUpload = files.length > 1;
+
   files.forEach((file) => {
-    formData.append("image", file);
+    formData.append(isMultipleUpload ? "images" : "image", file);
   });
 
   const response = await api.post(
-    `/products/${productId}/images`,
+    isMultipleUpload
+      ? `/products/${productId}/images/multiple`
+      : `/products/${productId}/images`,
     formData
   );
 
